@@ -10,4 +10,4 @@ This originates from PEG.js' [issue #623, "Performance problem...algorithmic com
 * I had posted some more pegjs, for actual profiling (= real numbers), also ready to paste there
 * Examples are growing, and polluting the issue
 * Now I really need diffs etc., so I'm just putting it here, for the time being. Whatever...
-* The `nesting-profile.pegjs` in here can still be tried out just by pasting it into https://pegjs.org/
+* The [`nesting-profile.pegjs`](./nesting-profile.pegjs) in here can still be tried out just by pasting it into https://pegjs.org/
