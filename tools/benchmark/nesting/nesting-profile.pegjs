@@ -1,33 +1,55 @@
-//
-// hmm ... look at what happens as we parse x, (x), ((x)), etc., in pegjs.org/online
-//     on a fast machine, add 2 or 4 pairs of parens at once, but more than 12 pairs may be a problem...
-//
-//     on my laptop, ((((((((x)))))))) takes ~2s to parse, 4s to err when x is deleted,
-//     time could be doubling with each added set of parens (it's rather tedious to check).
-//
-// Note that idiomatic usage, with the "*" (as per "replace" comments),
-//     solves the problem ... 48 pairs of parenthesis is fine on my laptop
-// However, that Ford's paper says there is a linear-time algorithm for any PEG,
-//     so the original grammar is not inherently slow.
-//
+// Deep Nesting: https://github.com/pegjs/pegjs/issues/623
+{
+  const tStart = Date.now();
+  const calls = { add: 0, call: 0, prim: 0 };
+}
 
-start
-  = _ addPrec _
+start = profile:v1 // just to make it easy to switch between variants
+/*
+/  But: BE CAREFUL! You may easily choke your browser and loose your edits!
+/  (with "results cache" you're on the safe side)
+/
+/  Variants:
+/    - [ ] v0: using * operator
+/    - [x] v1: variant from OP, choices with common prefix <<<<< BEWARE!
+/    - [ ] v2: refactored v1, without * but ?
+/    - [ ] v3: performant variant without *, + or ?
+*/
+{
+  Object.assign(profile, {
+    "max nesting": profile.n,
+    "time (ms)": Date.now() - tStart,
+    calls,
+  });
+  delete profile.n;
 
-// replace with addPrec = callPrec (_ "+" _ callPrec)*
-addPrec
-  = callPrec _ "+" _ callPrec
-  / callPrec
+  return profile;
+}
 
-// replace with callPrec = primary  (_ "(" _ addPrec _ ")")*
-callPrec
-  = primary _ "(" _ addPrec _ ")"
-  / primary
+//v0 = p:add0 { p.variant = 0; return p; }
+v1 = p:add1 { p.variant = 1; return p; }
+//v2 = p:add2 { p.variant = 2; return p; }
+//v3 = p:add3 { p.variant = 3; return p; }
 
-primary
-  = "(" _ addPrec _ ")"
-  / id
 
-id = ([_a-zA-Z][_A-Za-z0-9]*)
+bumpA = "" { calls.add++;  }
+bumpC = "" { calls.call++; }
+bumpP = "" { calls.prim++; }
 
-_  = [ \t\r\n]*
+// ------------------------------------------------------------------
+
+add1 = bumpA p:(
+       h:call1 "+" t:add1 { h.n = Math.max(h.n, t.n); return h; }
+     / call1
+  ) { return p; }
+
+call1 = bumpC p:(
+        h:prim1 "(" t:add1 ")" { t.n++; h.n = Math.max(h.n, t.n); return h; }
+      / prim1
+  ) { return p; }
+
+prim1 = bumpP p:(
+       "(" p:add1 ")" { p.n++; return p; }
+	 / "x" { return {n: 0} }
+  ) { return p; }
+
