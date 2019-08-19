@@ -1,7 +1,8 @@
 // Deep Nesting: https://github.com/pegjs/pegjs/issues/623
+// Details: https://github.com/meisl/pegjs/tree/master/tools/benchmark/nesting
 //
 // Just paste into https://pegjs.org/online - but do be careful
-// with nesting > 10 (see below)!
+// with nesting depths > 10. Sic!
 {
   const tStart = Date.now();
   const calls = { add: 0, call: 0, prim: 0 };
@@ -25,24 +26,14 @@
     return profile;
   }
 }
-/*
-/  Grammar variants (choose at start rule):
-/    - [x] v0: using * operator
-/    - [x] v1: choices with common prefix <<<<< BEWARE!
-/    - [ ] v2: refactored v1, without * but using ?
-/    - [ ] v3: performant variant without *, + or ?
-/
-/  BE CAREFUL! You may easily choke your browser and loose your edits!
-/  (with "results cache" you're on the safe side)
-*/
 
 start = profile:v1 // <<<<<<<< SELECT VARIANT HERE <<<<<<<<
 { return polish(profile) }
 
-v0 = p:add0 { p.variant = 0; return p; }
-v1 = p:add1 { p.variant = 1; return p; }
-//v2 = p:add2 { p.variant = 2; return p; }
-//v3 = p:add3 { p.variant = 3; return p; }
+v0 = p:add0 { p.variant = 0; p.description = "using * operator";                         return p; }
+v1 = p:add1 { p.variant = 1; p.description = "choices with common prefix <<<<< BEWARE!"; return p; }
+//v2 = p:add2 { p.variant = 2; p.description = "refactored v1, without * but using ?";     return p; }
+//v3 = p:add3 { p.variant = 3; p.description = "performant variant without *, + or ?";     return p; }
 
 bumpA = "" { calls.add++;  }
 bumpC = "" { calls.call++; }
