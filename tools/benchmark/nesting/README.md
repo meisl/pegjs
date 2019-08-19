@@ -4,6 +4,26 @@ This originates from PEG.js' [issue #623, "Performance problem...algorithmic com
 
 ### Problem summary
 [TODO: **common prefixes**, **memoization** (aka "results cache"), **automatic optimization?**]
+Original problematic grammar boiled down:
+```
+A = C "+" A
+  / C
+
+C = P "(" A ")"
+  / P
+
+P = "(" A ")"
+  / "x"
+```
+The problem as such could be reproduced with an even smaller grammar.
+However, we'll stick with this, since we also want to discuss practical
+aspects such as that the grammar should somewhat resemble the original intent.
+
+Pathological case:
+* *NO* memoization (ie. "Use results cache" OFF)
+* AND deep nesting in inputs: eg depth 10 `((((((((((x))))))))))`
+* BEWARE: parsing time will be **exponential in the nesting depth**
+* Worth noting: there's a *huge* difference between *valid* and *invalid* input (both deeply nested). Eg.: `((((((((((x))))))))))` vs. `(((((((((())))))))))`. Guess what - the *latter takes much, much longer*! [TODO: why?!]
 
 ### What's in this fork?
 * Example from OP was given so it could be simply pasted into https://pegjs.org/online
@@ -22,5 +42,3 @@ Grammar variants (choose at start rule in [pegjs example](./nesting-profile.pegj
 BE CAREFUL with too large a nesting depth: > 10!
 You may easily choke your browser and so loose edits you've made!
 With "Use results cache" on you're on the safe side.
-
-
