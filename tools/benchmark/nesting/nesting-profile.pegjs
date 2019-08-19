@@ -1,4 +1,7 @@
 // Deep Nesting: https://github.com/pegjs/pegjs/issues/623
+//
+// Just paste into https://pegjs.org/online - but do be careful
+// with nesting > 10 (see below)!
 {
   const tStart = Date.now();
   const calls = { add: 0, call: 0, prim: 0 };
