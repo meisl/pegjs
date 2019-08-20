@@ -5,8 +5,10 @@
 // with nesting depths > 10. Sic!
 {
   // Global state:
+  // * start time
+  // * call counters; increased by rules bumpA, bumpC and bumpP
   const tStart = Date.now();
-  const calls = { add: 0, call: 0, prim: 0 };  // call counters; increased by rules bumpA, bumpC and bumpP
+  const calls = { add: 0, call: 0, prim: 0 };
   
   // Aggregate results from one or more profile objects.
   // head: profile object
@@ -28,13 +30,13 @@
   }
 }
 
-start = profile:v2 // <<<<<<<< SELECT VARIANT HERE <<<<<<<<
+start = profile:v3 // <<<<<<<< SELECT VARIANT HERE <<<<<<<<
 { return polish(profile) }
 
-v0 = p:add0 { p.variant = 0; p.description = "using * operator";                         return p; }
-v1 = p:add1 { p.variant = 1; p.description = "choices with common prefix <<<<< BEWARE!"; return p; }
-v2 = p:add2 { p.variant = 2; p.description = "refactored v1, without * but using ?";     return p; }
-//v3 = p:add3 { p.variant = 3; p.description = "performant variant without *, + or ?";     return p; }
+v0 = p:add0 { p.variant = 0; p.description = "common prefixes, using * operator";   return p; }
+v1 = p:add1 { p.variant = 1; p.description = "common prefixes, no * <<<<< BEWARE!"; return p; }
+v2 = p:add2 { p.variant = 2; p.description = "no commmon prefixes, ? operator";     return p; }
+v3 = p:add3 { p.variant = 3; p.description = "no nothing, just ε";     return p; }
 
 bumpA = "" { calls.add++;  }
 bumpC = "" { calls.call++; }
@@ -91,7 +93,7 @@ prim1 = bumpP p:(
   ) { return p; }
 
 // - Variant 2 -------------------------------------------------------------
-// Avoid common prefixes by using ? W/out clutter:
+// Avoid common prefixes by using ?. W/out clutter:
 //   add  = call ("+" add)?
 //   call = prim ("(" add ")")?
 //   prim = "(" add ")"
@@ -109,6 +111,28 @@ call2 = bumpC p:(
 
 prim2 = bumpP p:(
        "(" p:add2 ")" { p.n++; return p; }
+	 / "x" { return {n: 0} }
+  ) { return p; }
+
+// - Variant 3 -------------------------------------------------------------
+// Avoid common prefixes by using ε. W/out clutter:
+//   add  = call ("+" add / "")
+//   call = prim ("(" add ")" / "")
+//   prim = "(" add ")"
+//        / "x"
+
+add3 = bumpA p:(
+        h:call3 t:("+" t:add3 { return t } / "")
+        { return t ? listUpdate(h, [t]) : h }
+  ) { return p; }
+
+call3 = bumpC p:(
+        h:prim3 t:("(" t:add3 ")" { t.n++; return t } / "")
+        { return t ? listUpdate(h, [t]) : h }
+  ) { return p; }
+
+prim3 = bumpP p:(
+       "(" p:add3 ")" { p.n++; return p; }
 	 / "x" { return {n: 0} }
   ) { return p; }
 
