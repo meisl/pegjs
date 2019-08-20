@@ -1,8 +1,8 @@
-## How PEG.js handles deep nesting
+# How PEG.js handles deep nesting
 
 This originates from PEG.js' [issue #623, "Performance problem...algorithmic complexity"](https://github.com/pegjs/pegjs/issues/623).
 
-### Problem summary
+## Problem summary
 [TODO: **common prefixes**, **memoization** (aka "results cache"), **automatic optimization?**]
 Original problematic grammar boiled down:
 ```
@@ -25,7 +25,7 @@ Pathological case:
 * BEWARE: parsing time will be **exponential in the nesting depth**
 * Worth noting: there's a *huge* difference between *valid* and *invalid* input (both deeply nested). Eg.: `((((((((((x))))))))))` vs. `(((((((((())))))))))`. Guess what - the *latter takes way longer*!
 
-### What's in this fork?
+## What's in this fork?
 * Example from OP was given so it could be simply pasted into https://pegjs.org/online
 * I had posted some more pegjs, for actual profiling (= real numbers), also ready to paste there
 * Examples are growing, and polluting the issue
@@ -43,22 +43,36 @@ BE CAREFUL with too large a nesting depth: > 10!
 You may easily choke your browser and so loose edits you've made!
 With "Use results cache" on you're on the safe side.
 
+## Evolving the grammar
+
+### v0 to v1: express `*` with recursion
+Rules `add` and `call` in variant 0:
+```
+// v0:
+add0 = call0 ("+" add0)*
+
+call0 = prim0 ("(" add0 ")")*
+```
+#### Why would we want to change this, after all?
+[TODO: practicality - not interested in the "+", "(" and ")", need for handling result *arrays* - all this clutters up the grammar]
+
+
 ### v1 to v2: elimininate common prefixes with operator `?`
 Rules `add` and `call` in variant 1:
 ```
 // v1:
-add = call "+" add
-    / call
+add1 = call1 "+" add1
+    / call1
 
-call = prim "(" add ")"
-     / prim
+call1 = prim1 "(" add1 ")"
+     / prim1
 ```
 ...which is undoubtedly equivalent to
 ```
 // v2:
-add = call ("+" add)?
+add2 = call2 ("+" add2)?
 
-call = prim ("(" add ")")?
+call2 = prim2 ("(" add2 ")")?
 ```
 Btw.: compare this to v0 (using `*`)...
 
