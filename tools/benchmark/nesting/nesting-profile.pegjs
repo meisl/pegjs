@@ -5,10 +5,8 @@
 // with nesting depths > 10. Sic!
 {
   // Global state:
-  // * start time
-  // * call counters; increased by rules bumpA, bumpC and bumpP
   const tStart = Date.now();
-  const calls = { add: 0, call: 0, prim: 0 };
+  const calls = { add: 0, call: 0, prim: 0 };  // call counters; increased by rules bumpA, bumpC and bumpP
   
   // Aggregate results from one or more profile objects.
   // head: profile object
