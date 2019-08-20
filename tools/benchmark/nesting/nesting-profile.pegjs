@@ -4,6 +4,9 @@
 // Just paste into https://pegjs.org/online - but do be careful
 // with nesting depths > 10. Sic!
 {
+  // Global state:
+  // * start time
+  // * call counters; increased by rules bumpA, bumpC and bumpP
   const tStart = Date.now();
   const calls = { add: 0, call: 0, prim: 0 };
   
